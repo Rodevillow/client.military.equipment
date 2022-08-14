@@ -44,5 +44,7 @@
   padding: $padding-default * 2;
   background-color: $dark-color;
   opacity: 0.9;
+  margin-left: 0;
+  margin-right: 0;
 }
 </style>
