@@ -1,9 +1,9 @@
 <template>
   <div class="ui-field">
     <div class="ui-field__label"
-         :class="{'ui-field--active': !isValueEmpty, 'ui-field--error': !isErrorsEmpty}"
+         :class="{'ui-field--active': !isValueEmpty && isErrorsEmpty, 'ui-field--error': !isErrorsEmpty}"
     >
-      {{ label }} {{ errors }}
+      {{ label }}
     </div>
     <div class="ui-field__input">
       <slot />
@@ -39,7 +39,6 @@ export default {
       return this.value.length === 0;
     },
     isErrorsEmpty() {
-      console.log('isErrorsEmpty', this.errors);
       return this.errors.length === 0;
     }
   },
@@ -56,15 +55,15 @@ export default {
   width: 100%;
   transition: .1s;
 
-  &--error {
-    color: $error-color !important;
-  }
-
   &:hover {
     .ui-field__label {
       color: $light-color;
       transition: .1s;
     }
+  }
+
+  &--error {
+    color: $error-color !important;
   }
 
   &--active {

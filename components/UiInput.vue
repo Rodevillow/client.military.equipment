@@ -4,7 +4,7 @@
       <slot />
     </div>
     <input class="input"
-           :class="{'input-full': slotIsEmpty, 'input--not-empty': !isValueEmpty}"
+           :class="{'input-full': slotIsEmpty, 'input--not-empty': !isValueEmpty && !isInvalid, 'input--is-invalid': isInvalid}"
            :type="type"
            :value="value"
            :placeholder="placeholder"
@@ -38,6 +38,10 @@ export default {
     disabled: {
       type: Boolean,
       default: false,
+    },
+    errors: {
+      type: Array,
+      default: []
     }
   },
   data: () => {
@@ -47,8 +51,10 @@ export default {
   },
   computed: {
     isValueEmpty() {
-      console.log('sjdfnasdjfs--------sadfasdfsadfsdf', this.value);
       return this.value.length === 0;
+    },
+    isInvalid() {
+      return this.errors.length > 0;
     }
   },
   mounted() {
@@ -81,6 +87,10 @@ export default {
   width: 100%;
   color: $light-color;
   transition: .1s;
+
+  &--is-invalid {
+    border-color: $error-color !important;
+  }
 
   &--not-empty {
     border-color: $light-color;

@@ -11,6 +11,7 @@
             <UiInput :value="form_data.nickname"
                      @on-input="onInputNickname"
                      @on-blur="onInputNickname"
+                     :errors="errors.nickname.errors"
                      plaseholder="Введіть нікнейм"
             ></UiInput>
           </UiField>
@@ -23,6 +24,7 @@
                      :value="form_data.email"
                      @on-input="onInputEmail"
                      @on-blur="onInputEmail"
+                     :errors="errors.email.errors"
             ></UiInput>
           </UiField>
           <UiField label="Пароль"
@@ -35,6 +37,7 @@
                      :value="form_data.password"
                      @on-input="onInputPassword"
                      @on-blur="onInputPassword"
+                     :errors="errors.password.errors"
             ></UiInput>
           </UiField>
           <UiField label="Повторіть пароль"
@@ -47,6 +50,7 @@
                      :value="form_data.password_confirmation"
                      @on-input="onInputPasswordConfirmation"
                      @on-blur="onInputPasswordConfirmation"
+                     :errors="errors.password_confirmation.errors"
             ></UiInput>
           </UiField>
           <UiButtonDefault class="w-100"
