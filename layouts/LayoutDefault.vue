@@ -32,7 +32,7 @@
   z-index: -1;
   left: 0;
   top: 69px;
-  width: 100vw;
+  width: 100%;
   height: calc(100vh - 69px - 69px);
   opacity: 0.2;
   object-fit: cover;

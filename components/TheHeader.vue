@@ -52,8 +52,8 @@ export default {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding-left: $padding-default * 2;
-    padding-right: $padding-default * 2;
+    padding-left: $padding-default * 2 !important;
+    padding-right: $padding-default * 2 !important;
   }
 
   &__logo {
