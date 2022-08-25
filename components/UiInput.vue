@@ -4,7 +4,7 @@
       <slot />
     </div>
     <input class="input"
-           :class="{'input-full': slotIsEmpty, 'input--not-empty': !isValueEmpty && !isInvalid, 'input--is-invalid': isInvalid}"
+           :class="{'input-full': slotIsEmpty, 'input--not-empty': !isValueEmpty && !isInvalid, 'input--is-invalid': isInvalid, 'input--is-valid': isValid}"
            :type="type"
            :value="value"
            :placeholder="placeholder"
@@ -40,8 +40,14 @@ export default {
       default: false,
     },
     errors: {
-      type: Array,
-      default: []
+      type: Array | Object,
+      default() {
+        return []
+      }
+    },
+    isDirty: {
+      type: Boolean,
+      default: false
     }
   },
   data: () => {
@@ -54,7 +60,10 @@ export default {
       return this.value.length === 0;
     },
     isInvalid() {
-      return this.errors.length > 0;
+      return this.errors.length > 0 && this.isDirty;
+    },
+    isValid() {
+      return this.errors.length === 0 && this.isDirty;
     }
   },
   mounted() {
@@ -62,13 +71,13 @@ export default {
   },
   methods: {
     onInput(event) {
-      this.$emit("on-input", event);
+      this.$emit("custom-input", event);
     },
     onFocus(event) {
-      this.$emit("on-focus", event);
+      this.$emit("custom-focus", event);
     },
     onBlur(event) {
-      this.$emit("on-blue", event);
+      this.$emit("custom-blur", event);
     }
   }
 }
@@ -90,6 +99,10 @@ export default {
 
   &--is-invalid {
     border-color: $error-color !important;
+  }
+
+  &--is-valid {
+    border-color: $success-color !important;
   }
 
   &--not-empty {

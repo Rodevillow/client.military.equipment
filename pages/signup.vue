@@ -9,9 +9,10 @@
                    class="mb-4"
           >
             <UiInput :value="form_data.nickname"
-                     @on-input="onInputNickname"
-                     @on-blur="onInputNickname"
+                     @custom-input="onInputNickname"
+                     @custom-blur="onInputNickname"
                      :errors="errors.nickname.errors"
+                     :is-dirty="errors.nickname.isDirty"
                      plaseholder="Введіть нікнейм"
             ></UiInput>
           </UiField>
@@ -22,9 +23,10 @@
           >
             <UiInput plaseholder="example@gmail.com"
                      :value="form_data.email"
-                     @on-input="onInputEmail"
-                     @on-blur="onInputEmail"
+                     @custom-input="onInputEmail"
+                     @custom-blur="onInputEmail"
                      :errors="errors.email.errors"
+                     :is-dirty="errors.email.isDirty"
             ></UiInput>
           </UiField>
           <UiField label="Пароль"
@@ -35,9 +37,10 @@
             <UiInput type="password"
                      plaseholder="Введіть пароль"
                      :value="form_data.password"
-                     @on-input="onInputPassword"
-                     @on-blur="onInputPassword"
+                     @custom-input="onInputPassword"
+                     @custom-blur="onInputPassword"
                      :errors="errors.password.errors"
+                     :is-dirty="errors.password.isDirty"
             ></UiInput>
           </UiField>
           <UiField label="Повторіть пароль"
@@ -48,15 +51,15 @@
             <UiInput type="password"
                      plaseholder="Введіть пароль повторно"
                      :value="form_data.password_confirmation"
-                     @on-input="onInputPasswordConfirmation"
-                     @on-blur="onInputPasswordConfirmation"
+                     @custom-input="onInputPasswordConfirmation"
+                     @custom-blur="onInputPasswordConfirmation"
                      :errors="errors.password_confirmation.errors"
+                     :is-dirty="errors.password_confirmation.isDirty"
             ></UiInput>
           </UiField>
-          <UiButtonDefault class="w-100"
-                           :class="{'singup-submit': isFormFull}"
-                           @on-click="onSubmitForm"
-                           :disabled="!isFormFull"
+          <UiButtonDefault class="w-100 signup-submit"
+                           @custom-click="onSubmitForm"
+                           :is-accent="isFormFullAndValid"
           >
             Зарегеструватися
           </UiButtonDefault>
@@ -77,6 +80,7 @@ const defaultErrorObject = {
 export default {
   name: 'SignUp',
   layout: 'LayoutDefault',
+  middleware: 'authenticated',
   data: () => {
     return {
       form_data: {
@@ -97,12 +101,12 @@ export default {
     UiButtonDefault
   },
   computed: {
-    isFormFull() {
-      return this.form_data.nickname
-        && this.form_data.email
-        && this.form_data.password
-        && this.form_data.password_confirmation
+    isFormFullAndValid() {
+      return !!this.checkIsFormFull() && this.form_data.password === this.form_data.password_confirmation;
     }
+    // test () {
+    //   return this.$store.state.auth.counter;
+    // }
   },
   methods: {
     onInputNickname(event) {
@@ -111,33 +115,100 @@ export default {
     },
     onInputEmail(event) {
       this.form_data.email = event.target.value;
+      this.validateEmail(this.form_data.email, this.errors.email);
     },
     onInputPassword(event) {
       this.form_data.password = event.target.value;
+      this.validatePassword(this.form_data.password, this.errors.password);
+      this.validatePasswordConfirmation(this.form_data, this.errors.password_confirmation);
     },
     onInputPasswordConfirmation(event) {
       this.form_data.password_confirmation = event.target.value;
+      this.validatePasswordConfirmation(this.form_data, this.errors.password_confirmation);
+    },
+    // -----------------------------------------------------
+    setErrorsFromApi(errorsForApi) {
+      for (const [key, value] of Object.entries(errorsForApi)) {
+        console.log(key, value);
+        this.errors[key] = {
+          isDirty: true,
+          errors: value
+        };
+      }
+    },
+    checkIsFormFull() {
+      return (
+        this.form_data.nickname &&
+        this.form_data.email &&
+        this.form_data.password &&
+        this.form_data.password_confirmation
+      );
+    },
+    checkIsFormValid(errors) {
+
+      let isValid = true;
+
+      for (const [key, value] of Object.entries(errors)) {
+        if (value.errors.length > 0) {
+          isValid = false;
+        }
+      }
+
+      return isValid;
+    },
+    async sendRequestToAuthRegister() {
+      try {
+        const res = await this.$axios.$post('/api/auth/register', this.form_data, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+        });
+
+        this.$store.commit('auth/commitRegister', {
+          accessToken: res.data.auth.original.access_token,
+          user: res.data.user
+        })
+
+        this.clearFormData();
+        this.clearErrorsData();
+
+        await this.$router.push('/dashboard');
+
+      } catch ({ response }) {
+        if (response.status === 422) {
+          const errors = response.data.errors;
+          this.setErrorsFromApi(errors);
+        }
+      }
     },
     onSubmitForm() {
-      this.errors.nickname.errors = [
-        'Nickname have an error! =(',
-        'Some test error again!'
-      ];
-      this.errors.email.errors = [
-        'Email have an error! =(',
-        'Some test error again!'
-      ];
-      this.errors.password.errors = [
-        'Password have an error! =(',
-        'Some test error again!'
-      ];
-      this.errors.password_confirmation.errors = [
-        'Password confirmation have an error! =(',
-        'Some test error again!'
-      ];
-      alert('Заглушка');
+      this.validateNickname(this.form_data.nickname, this.errors.nickname);
+      this.validateEmail(this.form_data.email, this.errors.email);
+      this.validatePassword(this.form_data.password, this.errors.password);
+      this.validatePasswordConfirmation(this.form_data, this.errors.password_confirmation);
+
+      if(this.checkIsFormValid(this.errors)) {
+        this.sendRequestToAuthRegister();
+      }
     },
-    // -------------------------
+    clearFormData() {
+      this.form_data.nickname = "";
+      this.form_data.email = "";
+      this.form_data.password = "";
+      this.form_data.password_confirmation = "";
+    },
+    clearErrorsData() {
+      this.errors.nickname.isDirty = false;
+      this.errors.nickname.errors = [];
+      this.errors.email.isDirty = false;
+      this.errors.email = [];
+      this.errors.password.isDirty = false;
+      this.errors.password = [];
+      this.errors.password_confirmation.isDirty = false;
+      this.errors.password_confirmation = [];
+    },
+    // -----------------------------------------------------
     validateNickname(value, error) {
       error.isDirty = true;
       error.errors = [];
@@ -149,8 +220,6 @@ export default {
       if (value.length > 50) {
         error.errors.push('Нікнейм має бути не довший за 50 символів!');
       }
-
-      // TODO :: Зробити перевірку (регулярку) яка буде перевіряти щоб були тільки букви (великі та малі), а всіляких спецсимволів не було!
     },
     validateEmail(value, error) {
       error.isDirty = true;
@@ -164,7 +233,9 @@ export default {
         error.errors.push('Пошта має бути не довшою ніж 50 символів!');
       }
 
-      // TODO :: Зробити перевірку (регулярку) яка буде перевіряти щоб були тільки букви (великі та малі), а всіляких спецсимволів не було!
+      if (!String(value).toLowerCase().match(/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/)) {
+        error.errors.push('Неправильний формат пошти!');
+      }
     },
     validatePassword(value, error) {
       error.isDirty = true;
@@ -177,22 +248,22 @@ export default {
       if (value.length > 50) {
         error.errors.push('Пароль має бути не довший за 50 символів!');
       }
-
-      // TODO :: Зробити перевірку (регулярку) яка буде перевіряти щоб були тільки букви (великі та малі), а всіляких спецсимволів не було!
     },
-    validatePasswordConfirmation(value, error) {
+    validatePasswordConfirmation(data, error) {
       error.isDirty = true;
       error.errors = [];
 
-      if (!value) {
+      if (!data.password_confirmation) {
         error.errors.push('Підтвердження паролю обовєязкове!');
       }
 
-      if (value.length > 50) {
+      if (data.password_confirmation.length > 50) {
         error.errors.push('Підтвердження паролю має бути не довший за 50 символів!');
       }
 
-      // TODO :: Зробити перевірку (регулярку) яка буде перевіряти щоб були тільки букви (великі та малі), а всіляких спецсимволів не було!
+      if (data.password !== data.password_confirmation) {
+        error.errors.push('Паролі не співпадають!');
+      }
     }
   }
 }
@@ -203,7 +274,6 @@ export default {
 
   .singup {
     background-color: $dark-color;
-    //padding: $padding-default * 4;
     border-radius: $border-radius-default;
 
     &__wrapper {

@@ -30,8 +30,10 @@ export default {
       default: ""
     },
     errors: {
-      type: Array,
-      default: []
+      type: Array | Object,
+      default() {
+        return [];
+      }
     },
   },
   computed: {
@@ -41,7 +43,7 @@ export default {
     isErrorsEmpty() {
       return this.errors.length === 0;
     }
-  },
+  }
 }
 </script>
 

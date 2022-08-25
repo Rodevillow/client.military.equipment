@@ -9,15 +9,19 @@
       <div class="header__menu">
         <ul>
 
-          <NuxtLink to="/signup" tag="li">
+          <NuxtLink to="/dashboard" v-if="isAuth" tag="li">
+            Dashboard
+          </NuxtLink>
+
+          <NuxtLink to="/signup" v-if="!isAuth" tag="li">
             Регестрація
           </NuxtLink>
 
-          <NuxtLink to="/signin" tag="li">
+          <NuxtLink to="/signin" v-if="!isAuth" tag="li">
             Увійти
           </NuxtLink>
 
-          <li>
+          <li v-if="isAuth" @click="handleLogoutClick">
             Вийти
           </li>
 
@@ -34,6 +38,17 @@ export default {
   name: "TheHeader",
   components: {
     TheContainer
+  },
+  computed: {
+    isAuth() {
+      return !!this.$store.state.auth.accessToken;
+    }
+  },
+  methods: {
+    handleLogoutClick(e) {
+      this.$store.commit('auth/commitLogout');
+      this.$router.push('/signin');
+    }
   }
 }
 </script>

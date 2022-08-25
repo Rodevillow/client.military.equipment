@@ -13,6 +13,9 @@
         Армии США (англ. Family of Medium Tactical Vehicles — семейство средних тактических автомобилей), может...
       </div>
     </div>
+    <div class="mt-4 mb-4 ml-4 mr-4" v-if="optionsPanel">
+      OPTIONS PANEL
+    </div>
   </div>
 </template>
 
@@ -23,6 +26,10 @@ export default {
     imgUrl: {
       type: String,
       default: null
+    },
+    optionsPanel: {
+      type: Boolean,
+      default: false
     }
   },
   methods: {

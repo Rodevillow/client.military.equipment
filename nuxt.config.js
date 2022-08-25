@@ -1,4 +1,6 @@
 export default {
+  ssr: true,
+  target: 'server',
   server: {
     host: '0.0.0.0'
   },
@@ -29,6 +31,10 @@ export default {
     ]
   },
 
+  router: {
+    // middleware: 'auth'
+  },
+
   // Global CSS: https://go.nuxtjs.dev/config-css
   css: [
     '@/assets/styles/main.scss'
@@ -57,12 +63,14 @@ export default {
     '@nuxtjs/axios',
     // https://go.nuxtjs.dev/pwa
     '@nuxtjs/pwa',
+    // With options
+    ['cookie-universal-nuxt'],
   ],
 
   // Axios module configuration: https://go.nuxtjs.dev/config-axios
   axios: {
     // Workaround to avoid enforcing hard-coded localhost:3000: https://github.com/nuxt-community/axios-module/issues/308
-    baseURL: '/',
+    baseURL: 'http://127.0.0.1:8008/',
   },
 
   // PWA module configuration: https://go.nuxtjs.dev/pwa

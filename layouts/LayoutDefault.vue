@@ -29,7 +29,7 @@
 
 .background-photo {
   position: absolute;
-  z-index: -1;
+  z-index: 0;
   left: 0;
   top: 69px;
   width: 100%;
